@@ -1,0 +1,58 @@
+DECISION LOG — Prueba Data Engineering Craftech
+================================================
+Índice de memoria del proyecto. Una entrada por decisión, en orden.
+Estados: PROPUESTA (en discusión) | ACEPTADA | DESCARTADA | REEMPLAZADA POR Dxxx
+
+Formato:
+  [Dxxx] YYYY-MM-DD | ESTADO | título
+    Decisión:      qué se decidió
+    Por qué:       razón
+    Alternativas:  qué se descartó y por qué
+    Origen:        quién la propuso (Nico / Claude / consigna)
+
+------------------------------------------------
+ÍNDICE
+  D001  Repo de la consigna clonado como base
+  D002  Usar dbt como herramienta de transformación
+  D003  Arquitectura medallion (bronze/silver/gold)
+  D004  Docker como forma de levantar el proyecto
+  D005  Airflow con corrida diaria incremental
+------------------------------------------------
+
+[D001] 2026-10-27 | ACEPTADA | Repo de la consigna clonado como base
+  Decisión:     Clonar craftech-io/prueba-data-engineering en ~/Desktop/craftech.
+                Para entregar, hay que crear un repo público propio y cambiar el remote.
+  Por qué:      La consigna pide un repo público propio.
+  Origen:       consigna
+
+[D002] 2026-10-27 | ACEPTADA | Usar dbt (dbt-duckdb)
+  Decisión:     Las transformaciones se escriben como modelos dbt sobre DuckDB.
+  Por qué:      Nico quiere aprender dbt y mostrarlo en la entrevista. Además, dbt da
+                tests, docs, lineage e incrementales sin tener que armarlos a mano.
+  Alternativas: SQL plano + Python runner: más simple, pero sin tests ni lineage.
+  Origen:       Nico
+
+[D003] 2026-10-27 | PROPUESTA | Arquitectura medallion
+  Decisión:     bronze = raw (tal cual llega), silver = limpio/deduplicado/tipado,
+                gold = modelo dimensional (dims + facts) para las preguntas de negocio.
+  Por qué:      Separa responsabilidades; encaja 1:1 con las capas de dbt
+                (staging / intermediate / marts).
+  Pendiente:    Definir el grano de cada tabla gold después de explorar raw.
+  Origen:       Nico
+
+[D004] 2026-10-27 | PROPUESTA | Docker para levantarlo
+  Decisión:     Imagen liviana Python + dbt-duckdb; un solo comando corre todo de cero.
+  Pendiente:    Si Airflow va dentro del compose por defecto o como perfil opcional (ver D005).
+  Origen:       Nico
+
+[D005] 2026-10-27 | PROPUESTA | Airflow, corrida diaria incremental
+  Decisión:     En discusión.
+  Puntos abiertos (Claude):
+    - La consigna dice que NO hace falta orquestador, solo describirlo. Airflow en
+      compose pesa (scheduler + webserver + postgres, varios GB de RAM) y le suma
+      fricción al evaluador en una "máquina limpia".
+    - DuckDB acepta un solo writer: Airflow y dbt no pueden escribir en paralelo.
+    - Incremental: con ~1.3 MB de datos no hace falta por performance; vale como
+      demostración. Riesgos: registros que llegan tarde (_ingested_at vs _extracted_at)
+      y órdenes que cambian de estado (la tabla orders es de eventos).
+  Origen:       Nico
