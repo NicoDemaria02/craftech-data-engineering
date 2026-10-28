@@ -1,0 +1,10 @@
+.venv/
+.git/
+data/
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/package-lock.yml
+**/__pycache__/
+catalog/
+docs/

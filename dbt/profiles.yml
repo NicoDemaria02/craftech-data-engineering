@@ -1,0 +1,13 @@
+ecommerce:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Silver y gold se escriben acá. Borrar este archivo = reconstruir desde cero.
+      path: "{{ env_var('WAREHOUSE_PATH', '../data/warehouse.duckdb') }}"
+      # Bronze: el archivo de la fuente, adjunto en solo lectura.
+      attach:
+        - path: "{{ env_var('BRONZE_PATH', '../data/ecommerce.duckdb') }}"
+          alias: bronze
+          read_only: true
+      threads: 4

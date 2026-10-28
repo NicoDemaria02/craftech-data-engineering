@@ -1,0 +1,49 @@
+version: 2
+
+# Tests sobre bronze: chequeos de contrato con la fuente, ANTES de transformar.
+# Si fallan, la extracción cambió o llegó rota (el DAG corta en check_bronze).
+sources:
+  - name: raw
+    description: Extracción de los sistemas operativos, tal cual llega (bronze).
+    database: bronze
+    schema: raw
+    tables:
+      - name: customers
+        description: Clientes registrados. 1 fila por cliente.
+        columns:
+          - name: customer_id
+            data_tests: [not_null]
+          - name: created_at
+            data_tests: [not_null]
+      - name: products
+        description: Catálogo con precio de lista actual. 1 fila por producto.
+        columns:
+          - name: product_id
+            data_tests: [not_null]
+          - name: unit_price
+            data_tests: [not_null]
+      - name: orders
+        description: >
+          Log de eventos del ciclo de vida de cada orden. Varias filas por orden
+          y re-entregas (misma order_id+status+event_at, distinto _ingested_at).
+        columns:
+          - name: order_id
+            data_tests: [not_null]
+          - name: status
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: [created, paid, shipped, delivered, cancelled, returned]
+          - name: event_at
+            data_tests: [not_null]
+          - name: _ingested_at
+            data_tests: [not_null]
+      - name: order_items
+        description: Líneas de cada orden. Tiene re-entregas por (order_id, line_number).
+        columns:
+          - name: order_id
+            data_tests: [not_null]
+          - name: line_number
+            data_tests: [not_null]
+          - name: _ingested_at
+            data_tests: [not_null]

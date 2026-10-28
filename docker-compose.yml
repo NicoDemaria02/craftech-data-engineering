@@ -1,0 +1,20 @@
+services:
+  # Corrida batch: construye silver y gold desde bronze y corre los tests. Termina y sale.
+  pipeline:
+    build: .
+    image: craftech-data-engineering
+    command: ["dbt", "build"]
+    volumes:
+      - ./data:/app/data
+
+  # Dashboard: arranca cuando el pipeline terminó bien. http://localhost:8501
+  dashboard:
+    image: craftech-data-engineering
+    command: ["streamlit", "run", "/app/app/streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      pipeline:
+        condition: service_completed_successfully

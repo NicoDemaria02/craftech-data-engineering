@@ -1,0 +1,66 @@
+version: 2
+
+models:
+  - name: gold_dim_customers
+    description: Clientes con su actividad de compra. 1 fila por cliente.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: is_active
+        description: Al menos 1 orden no cancelada en los 90 días previos a reference_date.
+        data_tests: [not_null]
+
+  - name: gold_dim_products
+    description: Productos. 1 fila por producto.
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+
+  - name: gold_fct_orders
+    description: Órdenes con su estado actual y montos. 1 fila por orden.
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('gold_dim_customers')
+                field: customer_id
+      - name: ordered_at
+        data_tests: [not_null]
+      - name: current_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [created, paid, shipped, delivered, cancelled, returned]
+      - name: revenue_amount
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+  - name: gold_fct_order_items
+    description: Líneas de venta con precio y monto. 1 fila por (order_id, line_number).
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [order_id, line_number]
+      # Ninguna línea se pierde en el join con productos.
+      - dbt_utils.equal_rowcount:
+          arguments:
+            compare_model: ref('silver_order_items')
+    columns:
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('gold_dim_products')
+                field: product_id
+      - name: line_amount
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"

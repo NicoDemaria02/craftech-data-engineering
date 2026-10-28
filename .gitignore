@@ -5,3 +5,9 @@ target/
 logs/
 dbt_packages/
 .DS_Store
+data/warehouse.duckdb*
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/package-lock.yml
+dbt/.user.yml
