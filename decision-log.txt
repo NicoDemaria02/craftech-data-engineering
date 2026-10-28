@@ -515,4 +515,10 @@ CIERRE DE SESIÓN 2026-10-27
                 queries -> dashboard; compose; DAG) y tabla "por dónde empezar a leer".
   Entrega:      commit con todo el proyecto + push a
                 github.com/NicoDemaria02/craftech-data-engineering (pedido por Nico).
+                Commit c2697b8 (verificado igual en GitHub).
+  Verificado:   `git clone` del repo público en carpeta nueva -> build de la imagen,
+                pipeline PASS=62 (8 modelos + 54 tests), ingresos 3.502.509,72,
+                dashboard HTTP 200 (en puerto 8599 porque el compose de Nico ocupaba el
+                8501; el arranque encadenado de `docker compose up` ya se había probado
+                en D030). Carpeta de prueba borrada.
   Origen:       Nico
